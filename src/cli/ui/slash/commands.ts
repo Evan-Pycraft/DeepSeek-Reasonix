@@ -54,6 +54,20 @@ export const SLASH_COMMANDS: readonly SlashCommandSpec[] = [
     argCompleter: ["EN", "zh-CN"],
     aliases: ["lang"],
   },
+  {
+    cmd: "theme",
+    argsHint: "[auto|default|dark|light|tokyo-night|github-dark|github-light]",
+    summary: "show or persist the terminal theme preference",
+    argCompleter: [
+      "auto",
+      "default",
+      "dark",
+      "light",
+      "tokyo-night",
+      "github-dark",
+      "github-light",
+    ],
+  },
   { cmd: "mcp", summary: "list MCP servers + tools attached to this session" },
   {
     cmd: "mcp browse",
