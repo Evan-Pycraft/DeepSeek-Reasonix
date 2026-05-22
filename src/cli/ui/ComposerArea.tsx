@@ -45,6 +45,7 @@ export interface ComposerAreaProps {
   input: string;
   setInput: (next: string) => void;
   busy: boolean;
+  steerBusy?: boolean;
   onSubmit: (raw: string) => Promise<void>;
   onHistoryPrev: () => void;
   onHistoryNext: () => void;
@@ -87,6 +88,7 @@ export const ComposerArea: React.FC<ComposerAreaProps> = React.memo(
     input,
     setInput,
     busy,
+    steerBusy,
     onSubmit,
     onHistoryPrev,
     onHistoryNext,
@@ -133,6 +135,7 @@ export const ComposerArea: React.FC<ComposerAreaProps> = React.memo(
           onChange={setInput}
           onSubmit={onSubmit}
           disabled={busy}
+          steerBusy={steerBusy}
           onHistoryPrev={onHistoryPrev}
           onHistoryNext={onHistoryNext}
           onOpenExternalEditor={onOpenExternalEditor}

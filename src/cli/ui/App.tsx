@@ -196,6 +196,11 @@ import { useEditHistory } from "./useEditHistory.js";
 import { useSessionInfo } from "./useSessionInfo.js";
 import { useSubagent } from "./useSubagent.js";
 
+function isBusyPromptCommand(text: string): boolean {
+  const trimmed = text.trimStart();
+  return trimmed.startsWith("/") || trimmed.startsWith("#") || detectBangCommand(trimmed) !== null;
+}
+
 export interface AppProps {
   model: string;
   /** Preset resolved at launch; keeps flash distinct from auto when both use deepseek-v4-flash. */
@@ -2181,7 +2186,15 @@ function AppInner({
           },
           submitPrompt: (text: string): SubmitResult => {
             if (busyRef.current) {
-              return { accepted: false, reason: "loop is busy with a turn" };
+              if (isBusyPromptCommand(text)) {
+                return {
+                  accepted: false,
+                  reason: "commands are disabled while steering a busy turn",
+                };
+              }
+              // Steer into current turn instead of rejecting
+              loop.steer(text);
+              return { accepted: true, reason: "steered" };
             }
             const fn = handleSubmitRef.current;
             if (!fn) return { accepted: false, reason: "TUI not ready" };
@@ -2622,6 +2635,18 @@ function AppInner({
         return;
       }
       if (busy || submittingRef.current) {
+        if (busy && text.trim()) {
+          if (isBusyPromptCommand(text)) {
+            log.pushInfo(t("app.steerCommandRejected"));
+            return;
+          }
+          setInput("");
+          resetCursor();
+          pushHistory(text);
+          loop.steer(text);
+          log.pushInfo(t("app.steerInjected"));
+          log.pushInfo(text, "ghost");
+        }
         return;
       }
       // Cancel-on-user-input: any user-typed submit cancels an active
@@ -4600,6 +4625,7 @@ function AppInner({
                   input={input}
                   setInput={setInput}
                   busy={busy}
+                  steerBusy={busy}
                   onSubmit={handleSubmit}
                   onHistoryPrev={handleHistoryPrev}
                   onHistoryNext={handleHistoryNext}
